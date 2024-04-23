@@ -32,11 +32,21 @@ function RangeHelper:UpdateIcon(arenaUnit)
     if not frame then return end
     if not frame.icon then
         frame.icon = frame:CreateTexture(nil, "OVERLAY");
-        frame.icon:SetSize(40, 40);
-        frame.icon:SetPoint("CENTER", frame, "CENTER", 0, 25);
+        frame.icon:SetSize(RangeHelper.db.profile.icon.size, RangeHelper.db.profile.icon.size);
+        frame.icon:SetTexture(RangeHelper.abilities[RangeHelper.db.profile.selectedAbility].iconPath);
+    else
+        local currentWidth, currentHeight = frame.icon:GetSize();
+        if currentWidth ~= tonumber(RangeHelper.db.profile.icon.size) or currentHeight ~= tonumber(RangeHelper.db.profile.icon.size) then
+            frame.icon:SetSize(RangeHelper.db.profile.icon.size, RangeHelper.db.profile.icon.size);
+        end
+
+        local currentAlpha = frame.icon:GetAlpha();
+        if currentAlpha ~= tonumber(RangeHelper.db.profile.icon.opacity) then
+            frame.icon:SetAlpha(tonumber(RangeHelper.db.profile.icon.opacity));
+        end
     end
-    frame.icon:SetTexture(RangeHelper.abilities[RangeHelper.db.profile.selectedAbility].iconPath);
-    
+    frame.icon:SetPoint("CENTER", frame, "CENTER", RangeHelper.db.profile.icon.coordinates.x, RangeHelper.db.profile.icon.coordinates.y);
+
     if playersWithinRange[arenaUnit] then
         frame.icon:Show();
     else
