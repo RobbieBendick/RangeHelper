@@ -27,3 +27,10 @@ RangeHelper.harmItems = {
         34368, -- Attuned Crystal Cores
     },
 };
+
+RangeHelper.classAbilities = {
+    ["MAGE"] = "Dragon's Breath",
+    ["PRIEST"] = "Psychic Scream",
+    ["WARLOCK"] = "Howl of Terror",
+    ["SHAMAN"] = "Thunderstorm",
+};

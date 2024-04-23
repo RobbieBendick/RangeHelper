@@ -2,10 +2,10 @@ local RangeHelper = LibStub("AceAddon-3.0"):GetAddon("RangeHelper");
 local LibDBIcon = LibStub("LibDBIcon-1.0");
 local AceConfigDialog = LibStub("AceConfigDialog-3.0");
 local RHConfig;
-
+local _, playerClass = UnitClass("player");
 local defaults = {
     profile = {
-        selectedAbility = "Thunderstorm",
+        selectedAbility = RangeHelper.classAbilities[playerClass] or "Thunderstorm",
     }
 };
 
@@ -56,7 +56,14 @@ function RangeHelper:OnInitialize()
     -- initialize saved variables with defaults
     RangeHelper.db = LibStub("AceDB-3.0"):New("RangeHelperDB", defaults, true);
 
-    -- handle events later
+
+
+
+
+
+    RangeHelper.db.profile.selectedAbility = RangeHelper.classAbilities[playerClass] or defaults.profile.selectedAbility;
+
+    -- TODO: handle events
 
 
     -- load config stuff
