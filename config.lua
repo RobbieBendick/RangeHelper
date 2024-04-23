@@ -56,13 +56,6 @@ function RangeHelper:OnInitialize()
     -- initialize saved variables with defaults
     RangeHelper.db = LibStub("AceDB-3.0"):New("RangeHelperDB", defaults, true);
 
-
-
-
-
-
-    RangeHelper.db.profile.selectedAbility = RangeHelper.classAbilities[playerClass] or defaults.profile.selectedAbility;
-
     -- TODO: handle events
 
 
