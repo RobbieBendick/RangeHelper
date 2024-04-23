@@ -1,0 +1,12 @@
+## Interface: 100200
+## Title: RangeHelper
+## Author: Mageiden
+## DefaultState: enabled
+## Version: v0.0.1
+## SavedVariables: RangeHelperDB
+
+embeds.xml
+
+abilities.lua
+config.lua
+core.lua
