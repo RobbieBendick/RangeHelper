@@ -3,6 +3,7 @@ local LibDBIcon = LibStub("LibDBIcon-1.0");
 local AceConfigDialog = LibStub("AceConfigDialog-3.0");
 local RHConfig;
 local _, playerClass = UnitClass("player");
+
 local defaults = {
     profile = {
         selectedAbility = RangeHelper.classAbilities[playerClass] or "Thunderstorm",
@@ -19,6 +20,11 @@ function RangeHelper:CreateMenu()
     RHConfig.title:SetPoint("TOPLEFT", 16, -16);
     RHConfig.title:SetText(RHConfig.name);
 
+    local abilities = {};
+    for abilityName, data in pairs(RangeHelper.abilities) do
+        abilities[abilityName] = ("%s (%dyd)"):format(abilityName, data.range);
+    end
+
     local options = {
         name = "RangeHelper",
         type = "group",
@@ -28,12 +34,7 @@ function RangeHelper:CreateMenu()
                 type = "select",
                 name = "Choose Ability",
                 desc = "Select an ability.",
-                values = {
-                    ["Thunderstorm"] = "Thunderstorm",
-                    ["Psychic Scream"] = "Psychic Scream",
-                    ["Howl of Terror"] = "Howl of Terror",
-                    ["Dragon's Breath"] = "Dragon's Breath",
-                },
+                values = abilities,
                 width = "normal",
                 set = function(info, value)
                     RangeHelper.db.profile.selectedAbility = value;
@@ -45,10 +46,10 @@ function RangeHelper:CreateMenu()
         },
     };
 
-    -- Register options table for the main "RangeHelper" addon
+    -- register options table for the main "RangeHelper" addon
     LibStub("AceConfig-3.0"):RegisterOptionsTable("RangeHelper", options);
 
-    -- Add addon to the Blizzard options panel
+    -- add addon to the Blizzard options panel
     LibStub("AceConfigDialog-3.0"):AddToBlizOptions("RangeHelper", "RangeHelper");
 end
 
@@ -60,9 +61,9 @@ function RangeHelper:OnInitialize()
     -- initialize saved variables with defaults
     RangeHelper.db = LibStub("AceDB-3.0"):New("RangeHelperDB", defaults, true);
 
+    self:Print("Type /rh to change the ability/icon/range of the tracker.");
 
     -- TODO: handle events
-
 
     -- load config stuff
     RangeHelper:CreateMenu();

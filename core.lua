@@ -2,12 +2,15 @@ local RangeHelper = LibStub("AceAddon-3.0"):GetAddon("RangeHelper");
 local playersWithinRange = {};
 local iconSize = 40;
 local nameplateToArenaNumberMap = {};
+local _, playerClass = UnitClass("player");
 
 function RangeHelper:IsWithinAbilityRange(unit)
     local spellRange = RangeHelper.abilities[RangeHelper.db.profile.selectedAbility].range;
     local rangeItemId = RangeHelper.harmItems[spellRange][1];
 
-    if not rangeItemId then return print("No item found with the spell range selected.") end
+    if not rangeItemId then
+        return print("No item found with the spell range selected.");
+    end
 
     return IsItemInRange(rangeItemId, unit);
 end
@@ -52,7 +55,6 @@ function RangeHelper:HandleUpdate()
             break;
         end
 
-        --  check if unit is in range
         if RangeHelper:IsWithinAbilityRange(unit) then
             playersWithinRange[unit] = true;
         else
@@ -65,7 +67,7 @@ end
 function RangeHelper:UpdateArenaNumberTable()
     for _, frame in pairs(C_NamePlate.GetNamePlates(issecure())) do
         for k,v in pairs(frame) do
-            if k == 'UnitFrame' then
+            if k == "UnitFrame" then
                 for j,l in pairs(v) do
                     if type(l) == "string" and l:find("^nameplate") then
                         for i = 1, 5 do
@@ -87,12 +89,22 @@ hooksecurefunc("CompactUnitFrame_SetUnit", function(frame)
     RangeHelper:UpdateArenaNumberTable();
 end);
 
+function RangeHelper:OpenOptions()
+    InterfaceOptionsFrame_OpenToCategory("RangeHelper");
+end
+
+if RangeHelper.classAbilities[playerClass] then
+    SLASH_RANGEHELPER1 = "/rh"; 
+    SLASH_RANGEHELPER2 = "/rangehelper";
+
+    SlashCmdList["RANGEHELPER"] = RangeHelper.OpenOptions;
+end
+
 local frame = CreateFrame("Frame");
 frame:RegisterEvent("ZONE_CHANGED_NEW_AREA");
 frame:RegisterEvent("PLAYER_LOGIN");
 
 frame:SetScript("OnEvent", function(self, event, ...)
-    local _, playerClass = UnitClass("player");
     if not RangeHelper.classAbilities[playerClass] then return end
     local _, instanceType = IsInInstance();
     if event == "ZONE_CHANGED_NEW_AREA" then
