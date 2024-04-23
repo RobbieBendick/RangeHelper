@@ -32,7 +32,6 @@ function RangeHelper:UpdateIcon(arenaUnit)
         frame.icon:SetSize(40, 40);
         frame.icon:SetPoint("CENTER", frame, "CENTER", 0, 25);
     end
-    print(RangeHelper.abilities[RangeHelper.db.profile.selectedAbility].iconPath)
     frame.icon:SetTexture(RangeHelper.abilities[RangeHelper.db.profile.selectedAbility].iconPath);
     
     if playersWithinRange[arenaUnit] then
@@ -64,7 +63,6 @@ function RangeHelper:HandleUpdate()
 end
 
 function RangeHelper:UpdateArenaNumberTable()
-    print('updating arena number table');
     for _, frame in pairs(C_NamePlate.GetNamePlates(issecure())) do
         for k,v in pairs(frame) do
             if k == 'UnitFrame' then
