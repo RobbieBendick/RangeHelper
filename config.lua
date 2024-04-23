@@ -32,6 +32,7 @@ function RangeHelper:CreateMenu()
                     ["Thunderstorm"] = "Thunderstorm",
                     ["Psychic Scream"] = "Psychic Scream",
                     ["Howl of Terror"] = "Howl of Terror",
+                    ["Dragon's Breath"] = "Dragon's Breath",
                 },
                 width = "normal",
                 set = function(info, value)
