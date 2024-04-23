@@ -53,8 +53,13 @@ function RangeHelper:CreateMenu()
 end
 
 function RangeHelper:OnInitialize()
+    if not RangeHelper.classAbilities[playerClass] then
+        return self:Print("No abilities available to track for your class.");
+    end
+
     -- initialize saved variables with defaults
     RangeHelper.db = LibStub("AceDB-3.0"):New("RangeHelperDB", defaults, true);
+
 
     -- TODO: handle events
 

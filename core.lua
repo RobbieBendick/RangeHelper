@@ -92,6 +92,8 @@ frame:RegisterEvent("ZONE_CHANGED_NEW_AREA");
 frame:RegisterEvent("PLAYER_LOGIN");
 
 frame:SetScript("OnEvent", function(self, event, ...)
+    local _, playerClass = UnitClass("player");
+    if not RangeHelper.classAbilities[playerClass] then return end
     local _, instanceType = IsInInstance();
     if event == "ZONE_CHANGED_NEW_AREA" then
         if instanceType == "arena" then
