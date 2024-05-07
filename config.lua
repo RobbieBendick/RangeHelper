@@ -3,6 +3,7 @@ local LibDBIcon = LibStub("LibDBIcon-1.0");
 local AceConfigDialog = LibStub("AceConfigDialog-3.0");
 local RHConfig;
 local _, playerClass = UnitClass("player");
+local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 
 local defaults = {
     profile = {
@@ -22,23 +23,26 @@ function RangeHelper:CreateMenu()
     RHConfig = CreateFrame("Frame", "RangeHelperConfig", UIParent);
 
     RHConfig.name = "RangeHelper";
-
-    RHConfig.title = RHConfig:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge");
-    RHConfig.title:SetParent(RHConfig);
-    RHConfig.title:SetPoint("TOPLEFT", 16, -16);
-    RHConfig.title:SetText(RHConfig.name);
-
+ 
     local abilities = {};
     for abilityName, data in pairs(RangeHelper.abilities) do
         abilities[abilityName] = ("%s (%dyd)"):format(abilityName, data.range);
     end
 
+    local version = GetAddOnMetadata("RangeHelper", "Version") or "Unknown";
+    local author = GetAddOnMetadata("RangeHelper", "Author") or "Unknown";
+
     local options = {
-        name = "RangeHelper",
+        name = RHConfig.name,
         type = "group",
         args = {
-            chooseAbility = {
+            info = {
                 order = 1,
+                type = "description",
+                name = "|cffffd700Version|r " .. version .. "\n|cffffd700 Author|r " .. author,
+            },
+            chooseAbility = {
+                order = 2,
                 type = "select",
                 name = "Choose Ability",
                 desc = "Select an ability.",
@@ -52,6 +56,7 @@ function RangeHelper:CreateMenu()
                 end,
             },
             icon = {
+                order = 3,
                 type = "group",
                 name = "Icon Settings",
                 inline = true,
@@ -61,7 +66,7 @@ function RangeHelper:CreateMenu()
                         type = "range",
                         name = "Icon Size",
                         desc = "Set the size of the icon.",
-                        min = 5,
+                        min = 0,
                         max = 80,
                         step = 1,
                         set = function(info, value)
@@ -88,8 +93,7 @@ function RangeHelper:CreateMenu()
                     },
                     coordinates = {
                         type = "group",
-                        name = "Icon Coordinates",
-                        inline = true,
+                        name = "Coordinates",
                         args = {
                             x = {
                                 order = 1,
@@ -121,21 +125,47 @@ function RangeHelper:CreateMenu()
                                     return RangeHelper.db.profile.icon.coordinates.y;
                                 end,
                             },
+                     
                         },
                     },
-                    
+                    resetIconSettings = {
+                        order = 100,
+                        type = "execute",
+                        name = "Reset Icon Settings",
+                        desc = "Reset all icon settings to default values.",
+                        func = function() -- Function to reset icon settings
+                            StaticPopup_Show("RESET_ICON_SETTINGS_CONFIRM");
+                        end,
+                    },
                 },
             },
         },
     };
     
-
     -- register options table for the main "RangeHelper" addon
     LibStub("AceConfig-3.0"):RegisterOptionsTable("RangeHelper", options);
 
     -- add addon to the Blizzard options panel
     LibStub("AceConfigDialog-3.0"):AddToBlizOptions("RangeHelper", "RangeHelper");
 
+end
+
+function RangeHelper:LoadStaticDialogs()
+    StaticPopupDialogs["RESET_ICON_SETTINGS_CONFIRM"] = {
+        text = "Are you sure you want to reset your icon settings?",
+        button1 = "Yes",
+        button2 = "No",
+        OnAccept = function()
+            self.db.profile.icon.size = defaults.profile.icon.size;
+            self.db.profile.icon.opacity = defaults.profile.icon.opacity;
+            self.db.profile.icon.coordinates.x = defaults.profile.icon.coordinates.x;
+            self.db.profile.icon.coordinates.y = defaults.profile.icon.coordinates.y;
+            AceConfigRegistry:NotifyChange("RangeHelper")
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+    };
 end
 
 function RangeHelper:OnInitialize()
@@ -149,8 +179,13 @@ function RangeHelper:OnInitialize()
     self:Print("Type /rh to change the ability/icon/range of the tracker.");
 
 
+
     -- TODO: handle events
 
     -- load config stuff
     RangeHelper:CreateMenu();
+
+
+    self:LoadStaticDialogs()
+
 end
