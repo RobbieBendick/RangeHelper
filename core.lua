@@ -41,7 +41,7 @@ function RangeHelper:UpdateIcon(frame)
     frame.icon:SetTexture(self.abilities[self.db.profile.selectedAbility].iconPath);
     frame.icon:SetPoint("CENTER", frame, "CENTER", self.db.profile.icon.coordinates.x, self.db.profile.icon.coordinates.y);
 
-    if RangeHelper.playersWithinRange[frame] then
+    if RangeHelper.playersWithinRange[frame]  then
         frame.icon:Show();
     else
         frame.icon:Hide();
@@ -64,7 +64,6 @@ function RangeHelper:HandleUpdate()
         end
         RangeHelper:UpdateIcon(frame);
     end
-
 end
 
 function RangeHelper:UpdatePlayerTable(frame)
@@ -88,6 +87,8 @@ hooksecurefunc("CompactUnitFrame_SetUnit", function(frame)
 
     if shouldUpdate then
         RangeHelper:UpdatePlayerTable(frame);
+    else
+        RangeHelper.playersWithinRange = {};
     end
 end);
 
@@ -113,7 +114,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
     
     local function updateTracking()
         if (instanceType == "arena" and RangeHelper.db.profile.showInArena) or
-           (instanceType == "none" and RangeHelper.db.profile.showInWorld) or 
+           (instanceType == "arena" and instanceType ~= "party" and RangeHelper.db.profile.showInWorld) or 
            (instanceType == "pvp" and RangeHelper.db.profile.showInBG) then
             self:SetScript("OnUpdate", RangeHelper.HandleUpdate);
         else
