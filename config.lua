@@ -8,6 +8,9 @@ local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 local defaults = {
     profile = {
         selectedAbility = RangeHelper.classAbilities[playerClass] or "Thunderstorm",
+        showInArena = true,
+        showInWorld = false,
+        showInBG = false,
         icon = {
             ["coordinates"] = {
                 x = 0,
@@ -41,19 +44,74 @@ function RangeHelper:CreateMenu()
                 type = "description",
                 name = "|cffffd700Version|r " .. version .. "\n|cffffd700 Author|r " .. author,
             },
-            chooseAbility = {
+            abilitySettings = {
                 order = 2,
-                type = "select",
-                name = "Choose Ability",
-                desc = "Select an ability.",
-                values = abilities,
-                width = "normal",
-                set = function(info, value)
-                    RangeHelper.db.profile.selectedAbility = value;
-                end,
-                get = function(info)
-                    return RangeHelper.db.profile.selectedAbility;
-                end,
+                type = "group",
+                name = "Ability Settings",
+                inline = true,
+                args = {
+                    chooseAbility = {
+                        order = 1,
+                        type = "select",
+                        name = "Choose Ability",
+                        desc = "Select an ability.",
+                        values = abilities,
+                        set = function(info, value)
+                            RangeHelper.db.profile.selectedAbility = value;
+                        end,
+                        get = function(info)
+                            return RangeHelper.db.profile.selectedAbility;
+                        end,
+                    },
+                    spacer = {
+                        order = 2,
+                        type = "description",
+                        name = " ", 
+                        width = 0.05,
+                    },
+                    showInArena = {
+                        order = 3,
+                        width = 0.75,
+                        type = "toggle",
+                        name = "Show In Arena",
+                        desc = "Show in arena.",
+                        set = function(info, value)
+                            RangeHelper.playersWithinRange = {};
+                            RangeHelper.db.profile.showInArena = value;
+                        end,
+                        get = function(info)
+                            return RangeHelper.db.profile.showInArena;
+                        end,
+                    },
+                    showInBG = {
+                        order = 4,
+                        width = 0.67,
+                        type = "toggle",
+                        name = "Show In BG",
+                        desc = "Show in BG.",
+                        set = function(info, value)
+                            RangeHelper.playersWithinRange = {};
+                            RangeHelper.db.profile.showInBG = value;
+                        end,
+                        get = function(info)
+                            return RangeHelper.db.profile.showInBG;
+                        end,
+                    },
+                    showInWorld = {
+                        order = 5,
+                        width = 0.75,
+                        type = "toggle",
+                        name = "Show In World",
+                        desc = "Show in world.",
+                        set = function(info, value)
+                            RangeHelper.playersWithinRange = {};
+                            RangeHelper.db.profile.showInWorld = value;
+                        end,
+                        get = function(info)
+                            return RangeHelper.db.profile.showInWorld;
+                        end,
+                    },
+                },
             },
             icon = {
                 order = 3,
@@ -125,7 +183,6 @@ function RangeHelper:CreateMenu()
                                     return RangeHelper.db.profile.icon.coordinates.y;
                                 end,
                             },
-                     
                         },
                     },
                     resetIconSettings = {
@@ -160,7 +217,8 @@ function RangeHelper:LoadStaticDialogs()
             self.db.profile.icon.opacity = defaults.profile.icon.opacity;
             self.db.profile.icon.coordinates.x = defaults.profile.icon.coordinates.x;
             self.db.profile.icon.coordinates.y = defaults.profile.icon.coordinates.y;
-            AceConfigRegistry:NotifyChange("RangeHelper")
+            self.db.profile.showInArena = defaults.profile.showInArena;
+            AceConfigRegistry:NotifyChange("RangeHelper");
         end,
         timeout = 0,
         whileDead = true,
@@ -178,14 +236,11 @@ function RangeHelper:OnInitialize()
 
     self:Print("Type /rh to change the ability/icon/range of the tracker.");
 
-
-
     -- TODO: handle events
 
     -- load config stuff
     RangeHelper:CreateMenu();
 
-
     self:LoadStaticDialogs()
-
 end
+

@@ -1,12 +1,10 @@
 local RangeHelper = LibStub("AceAddon-3.0"):GetAddon("RangeHelper");
-local playersWithinRange = {};
-local iconSize = 40;
-local nameplateToArenaNumberMap = {};
+RangeHelper.playersWithinRange = {};
 local _, playerClass = UnitClass("player");
 
 function RangeHelper:IsWithinAbilityRange(unit)
-    local spellRange = RangeHelper.abilities[RangeHelper.db.profile.selectedAbility].range;
-    local rangeItemId = RangeHelper.harmItems[spellRange][1];
+    local spellRange = self.abilities[RangeHelper.db.profile.selectedAbility].range;
+    local rangeItemId = self.harmItems[spellRange][1];
 
     if not rangeItemId then
         return print("No item found with the spell range selected.");
@@ -24,30 +22,26 @@ function RangeHelper:GetKeyByValue(tbl, value)
     return nil;
 end
 
-function RangeHelper:UpdateIcon(arenaUnit)
-    if not arenaUnit or not UnitIsEnemy("player", arenaUnit) then return end
-    local nameplateUnit = RangeHelper:GetKeyByValue(nameplateToArenaNumberMap, arenaUnit);
-    if not nameplateUnit then return end
-    local frame = C_NamePlate.GetNamePlateForUnit(nameplateUnit, true);
+function RangeHelper:UpdateIcon(frame)
     if not frame then return end
     if not frame.icon then
         frame.icon = frame:CreateTexture(nil, "OVERLAY");
-        frame.icon:SetSize(RangeHelper.db.profile.icon.size, RangeHelper.db.profile.icon.size);
+        frame.icon:SetSize(self.db.profile.icon.size, self.db.profile.icon.size);
     else
         local currentWidth, currentHeight = frame.icon:GetSize();
-        if currentWidth ~= tonumber(RangeHelper.db.profile.icon.size) or currentHeight ~= tonumber(RangeHelper.db.profile.icon.size) then
-            frame.icon:SetSize(RangeHelper.db.profile.icon.size, RangeHelper.db.profile.icon.size);
+        if currentWidth ~= tonumber(self.db.profile.icon.size) or currentHeight ~= tonumber(self.db.profile.icon.size) then
+            frame.icon:SetSize(self.db.profile.icon.size, self.db.profile.icon.size);
         end
 
         local currentAlpha = frame.icon:GetAlpha();
-        if currentAlpha ~= tonumber(RangeHelper.db.profile.icon.opacity) then
-            frame.icon:SetAlpha(tonumber(RangeHelper.db.profile.icon.opacity));
+        if currentAlpha ~= tonumber(self.db.profile.icon.opacity) then
+            frame.icon:SetAlpha(tonumber(self.db.profile.icon.opacity));
         end
     end
-    frame.icon:SetTexture(RangeHelper.abilities[RangeHelper.db.profile.selectedAbility].iconPath);
-    frame.icon:SetPoint("CENTER", frame, "CENTER", RangeHelper.db.profile.icon.coordinates.x, RangeHelper.db.profile.icon.coordinates.y);
+    frame.icon:SetTexture(self.abilities[self.db.profile.selectedAbility].iconPath);
+    frame.icon:SetPoint("CENTER", frame, "CENTER", self.db.profile.icon.coordinates.x, self.db.profile.icon.coordinates.y);
 
-    if playersWithinRange[arenaUnit] then
+    if RangeHelper.playersWithinRange[frame] then
         frame.icon:Show();
     else
         frame.icon:Hide();
@@ -55,51 +49,50 @@ function RangeHelper:UpdateIcon(arenaUnit)
 end
 
 function RangeHelper:HandleUpdate()
-    for i = 1, 5 do
-        local unit = "arena"..i;
-        if not UnitExists(unit) then 
-            if playersWithinRange[unit] then
-                playersWithinRange[unit] = nil;
-                RangeHelper:UpdateIcon(unit);
+    for frame, inRange in pairs(RangeHelper.playersWithinRange) do
+        if not UnitExists(frame.unit) then 
+            if RangeHelper.playersWithinRange[frame] then
+                RangeHelper.playersWithinRange[frame] = nil;
+                self:UpdateIcon(frame);
             end
             break;
         end
-
-        if RangeHelper:IsWithinAbilityRange(unit) then
-            playersWithinRange[unit] = true;
+        if RangeHelper:IsWithinAbilityRange(frame.unit) then
+            RangeHelper.playersWithinRange[frame] = true;
         else
-            playersWithinRange[unit] = false;
+            RangeHelper.playersWithinRange[frame] = false;
         end
-        RangeHelper:UpdateIcon(unit);
+        RangeHelper:UpdateIcon(frame);
     end
+
 end
 
-function RangeHelper:UpdateArenaNumberTable()
-    for _, frame in pairs(C_NamePlate.GetNamePlates(issecure())) do
-        for k,v in pairs(frame) do
-            if k == "UnitFrame" then
-                for j,l in pairs(v) do
-                    if type(l) == "string" and l:find("^nameplate") then
-                        for i = 1, 5 do
-                            if not UnitExists("arena"..i) then break end
-                            if UnitIsUnit(l, "arena"..i) then
-                                nameplateToArenaNumberMap[l] = "arena"..i;
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
+function RangeHelper:UpdatePlayerTable(frame)
+    if RangeHelper.playersWithinRange[frame] then return end
+    if not UnitIsPlayer(frame.unit) then return end
+    RangeHelper.playersWithinRange[frame] = false;
 end
 
 hooksecurefunc("CompactUnitFrame_SetUnit", function(frame)
     local _, instanceType = IsInInstance();
-    if instanceType ~= "arena" then return end 
-    RangeHelper:UpdateArenaNumberTable();
+    local shouldUpdate = false;
+    
+    if instanceType == "arena" and RangeHelper.db.profile.showInArena then
+        shouldUpdate = true;
+    elseif instanceType == "pvp" and RangeHelper.db.profile.showInBG then
+        shouldUpdate = true;
+    elseif instanceType == "none" and RangeHelper.db.profile.showInWorld then
+        shouldUpdate = true;
+    end
+
+
+    if shouldUpdate then
+        RangeHelper:UpdatePlayerTable(frame);
+    end
 end);
 
 function RangeHelper:OpenOptions()
+    InterfaceOptionsFrame_OpenToCategory("RangeHelper");
     InterfaceOptionsFrame_OpenToCategory("RangeHelper");
 end
 
@@ -117,19 +110,19 @@ frame:RegisterEvent("PLAYER_LOGIN");
 frame:SetScript("OnEvent", function(self, event, ...)
     if not RangeHelper.classAbilities[playerClass] then return end
     local _, instanceType = IsInInstance();
-    if event == "ZONE_CHANGED_NEW_AREA" then
-        if instanceType == "arena" then
+    
+    local function updateTracking()
+        if (instanceType == "arena" and RangeHelper.db.profile.showInArena) or
+           (instanceType == "none" and RangeHelper.db.profile.showInWorld) or 
+           (instanceType == "pvp" and RangeHelper.db.profile.showInBG) then
             self:SetScript("OnUpdate", RangeHelper.HandleUpdate);
         else
-            playersWithinRange = {};
+            RangeHelper.playersWithinRange = {};
             self:SetScript("OnUpdate", nil);
         end
-    elseif event == "PLAYER_LOGIN" then
-        if instanceType == "arena" then
-            self:SetScript("OnUpdate", RangeHelper.HandleUpdate);
-        else
-            playersWithinRange = {};
-            self:SetScript("OnUpdate", nil);
-        end
+    end
+
+    if event == "ZONE_CHANGED_NEW_AREA" or event == "PLAYER_LOGIN" then
+        updateTracking();
     end
 end);
