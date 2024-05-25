@@ -53,7 +53,7 @@ function RangeHelper:HandleUpdate()
         if not UnitExists(frame.unit) then 
             if RangeHelper.playersWithinRange[frame] then
                 RangeHelper.playersWithinRange[frame] = nil;
-                self:UpdateIcon(frame);
+                RangeHelper:UpdateIcon(frame);
             end
             break;
         end
