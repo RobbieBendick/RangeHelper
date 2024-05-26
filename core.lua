@@ -41,7 +41,8 @@ function RangeHelper:UpdateIcon(frame)
     frame.icon:SetTexture(self.abilities[self.db.profile.selectedAbility].iconPath);
     frame.icon:SetPoint("CENTER", frame, "CENTER", self.db.profile.icon.coordinates.x, self.db.profile.icon.coordinates.y);
 
-    if RangeHelper.playersWithinRange[frame] then
+    -- have to explicity check if true
+    if RangeHelper.playersWithinRange[frame] == true then
         frame.icon:Show();
     else
         frame.icon:Hide();
@@ -68,7 +69,7 @@ end
 
 function RangeHelper:UpdatePlayerTable(frame)
     if RangeHelper.playersWithinRange[frame] then return end
-    if not UnitIsPlayer(frame.unit) or not UnitIsEnemy("player", frame.unit) then return end
+    if (not UnitIsPlayer(frame.unit) or not UnitIsEnemy("player", frame.unit)) or UnitIsDead(frame.unit) then return end
     RangeHelper.playersWithinRange[frame] = false;
 end
 
