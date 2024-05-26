@@ -190,7 +190,7 @@ function RangeHelper:CreateMenu()
                         type = "execute",
                         name = "Reset Icon Settings",
                         desc = "Reset all icon settings to default values.",
-                        func = function() -- Function to reset icon settings
+                        func = function()
                             StaticPopup_Show("RESET_ICON_SETTINGS_CONFIRM");
                         end,
                     },
@@ -240,7 +240,9 @@ function RangeHelper:OnInitialize()
 
     -- load config stuff
     RangeHelper:CreateMenu();
+    AceConfigRegistry:NotifyChange("RangeHelper");
 
-    self:LoadStaticDialogs()
+
+    self:LoadStaticDialogs();
 end
 
