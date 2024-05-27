@@ -253,7 +253,6 @@ function RangeHelper:LoadStaticDialogs()
             self.db.profile.icon.opacity = defaults.profile.icon.opacity;
             self.db.profile.icon.coordinates.x = defaults.profile.icon.coordinates.x;
             self.db.profile.icon.coordinates.y = defaults.profile.icon.coordinates.y;
-            self.db.profile.showInArena = defaults.profile.showInArena;
             AceConfigRegistry:NotifyChange("RangeHelper");
         end,
         timeout = 0,
