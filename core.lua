@@ -10,16 +10,7 @@ function RangeHelper:IsWithinAbilityRange(unit)
         return print("No item found with the spell range selected.");
     end
 
-    return IsItemInRange(rangeItemId, unit);
-end
-
-function RangeHelper:GetKeyByValue(tbl, value)
-    for k, v in pairs(tbl) do
-        if v == value then
-            return k;
-        end
-    end
-    return nil;
+    return IsItemInRange(rangeItemId, unit) or false;
 end
 
 function RangeHelper:UpdateIcon(frame)
@@ -33,8 +24,8 @@ function RangeHelper:UpdateIcon(frame)
             frame.icon:SetSize(self.db.profile.icon.size, self.db.profile.icon.size);
         end
 
-        local currentAlpha = frame.icon:GetAlpha();
-        if currentAlpha ~= tonumber(self.db.profile.icon.opacity) then
+        local currentOpacity = frame.icon:GetAlpha();
+        if currentOpacity ~= tonumber(self.db.profile.icon.opacity) then
             frame.icon:SetAlpha(tonumber(self.db.profile.icon.opacity));
         end
     end
@@ -50,7 +41,7 @@ function RangeHelper:UpdateIcon(frame)
 end
 
 function RangeHelper:HandleUpdate()
-    for frame, inRange in pairs(RangeHelper.playersWithinRange) do
+    for frame in pairs(RangeHelper.playersWithinRange) do
         if not UnitExists(frame.unit) then 
             if RangeHelper.playersWithinRange[frame] then
                 RangeHelper.playersWithinRange[frame] = nil;
@@ -68,8 +59,10 @@ function RangeHelper:HandleUpdate()
 end
 
 function RangeHelper:UpdatePlayerTable(frame)
-    if RangeHelper.playersWithinRange[frame] then return end
-    if (not UnitIsPlayer(frame.unit) or not UnitIsEnemy("player", frame.unit)) or UnitIsDead(frame.unit) then return end
+    if not UnitIsPlayer(frame.unit) then return end
+    if not UnitIsEnemy("player", frame.unit) then return end
+    if UnitIsDead(frame.unit) then return end
+    
     RangeHelper.playersWithinRange[frame] = false;
 end
 
@@ -84,7 +77,6 @@ hooksecurefunc("CompactUnitFrame_SetUnit", function(frame)
     elseif instanceType == "none" and RangeHelper.db.profile.showInWorld then
         shouldUpdate = true;
     end
-
 
     if shouldUpdate then
         RangeHelper:UpdatePlayerTable(frame);
@@ -115,8 +107,8 @@ frame:SetScript("OnEvent", function(self, event, ...)
     
     local function updateTracking()
         if (instanceType == "arena" and RangeHelper.db.profile.showInArena) or
-           (instanceType == "arena" and instanceType ~= "party" and RangeHelper.db.profile.showInWorld) or 
-           (instanceType == "pvp" and RangeHelper.db.profile.showInBG) then
+        (instanceType == "none" and RangeHelper.db.profile.showInWorld) or 
+        (instanceType == "pvp" and RangeHelper.db.profile.showInBG) then
             self:SetScript("OnUpdate", RangeHelper.HandleUpdate);
         else
             RangeHelper.playersWithinRange = {};

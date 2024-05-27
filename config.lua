@@ -11,6 +11,8 @@ local defaults = {
         showInArena = true,
         showInWorld = false,
         showInBG = false,
+        -- showInDungeon = false,
+        -- showInRaid = false,
         icon = {
             ["coordinates"] = {
                 x = 0,
@@ -69,54 +71,88 @@ function RangeHelper:CreateMenu()
                         name = " ", 
                         width = 0.05,
                     },
-                    showInArena = {
+                    showInCategory = {
                         order = 3,
-                        width = 0.75,
-                        type = "toggle",
-                        name = "Show In Arena",
-                        desc = "Show in arena.",
-                        set = function(info, value)
-                            RangeHelper.playersWithinRange = {};
-                            RangeHelper.db.profile.showInArena = value;
-                        end,
-                        get = function(info)
-                            return RangeHelper.db.profile.showInArena;
-                        end,
-                    },
-                    showInBG = {
-                        order = 4,
-                        width = 0.67,
-                        type = "toggle",
-                        name = "Show In BG",
-                        desc = "Show in BG.",
-                        set = function(info, value)
-                            RangeHelper.playersWithinRange = {};
-                            RangeHelper.db.profile.showInBG = value;
-                        end,
-                        get = function(info)
-                            return RangeHelper.db.profile.showInBG;
-                        end,
-                    },
-                    showInWorld = {
-                        order = 5,
-                        width = 0.75,
-                        type = "toggle",
-                        name = "Show In World",
-                        desc = "Show in world.",
-                        set = function(info, value)
-                            RangeHelper.playersWithinRange = {};
-                            RangeHelper.db.profile.showInWorld = value;
-                        end,
-                        get = function(info)
-                            return RangeHelper.db.profile.showInWorld;
-                        end,
-                    },
+                        type = "group",
+                        name = "Visibility Options",
+                        inline = true,
+                        args = {
+                            showInArena = {
+                                order = 1,
+                                width = 0.67,
+                                type = "toggle",
+                                name = "Show In Arena",
+                                desc = "Show in arena.",
+                                set = function(info, value)
+                                    RangeHelper.playersWithinRange = {};
+                                    RangeHelper.db.profile.showInArena = value;
+                                end,
+                                get = function(info)
+                                    return RangeHelper.db.profile.showInArena;
+                                end,
+                            },
+                            showInBG = {
+                                order = 2,
+                                width = 0.57,
+                                type = "toggle",
+                                name = "Show In BG",
+                                desc = "Show in BG.",
+                                set = function(info, value)
+                                    RangeHelper.playersWithinRange = {};
+                                    RangeHelper.db.profile.showInBG = value;
+                                end,
+                                get = function(info)
+                                    return RangeHelper.db.profile.showInBG;
+                                end,
+                            },
+                            showInWorld = {
+                                order = 3,
+                                width = 0.67,
+                                type = "toggle",
+                                name = "Show In World",
+                                desc = "Show in world.",
+                                set = function(info, value)
+                                    RangeHelper.playersWithinRange = {};
+                                    RangeHelper.db.profile.showInWorld = value;
+                                end,
+                                get = function(info)
+                                    return RangeHelper.db.profile.showInWorld;
+                                end,
+                            },
+                            -- showInDungeon = {
+                            --     order = 4,
+                            --     width = 0.8,
+                            --     type = "toggle",
+                            --     name = "Show In Dungeons",
+                            --     desc = "Show in dungeons.",
+                            --     set = function(info, value)
+                            --         RangeHelper.db.profile.showInDungeon = value;
+                            --     end,
+                            --     get = function(info)
+                            --         return RangeHelper.db.profile.showInDungeon;
+                            --     end,
+                            -- },
+                            -- showInRaid = {
+                            --     order = 5,
+                            --     width = 0.9,
+                            --     type = "toggle",
+                            --     name = "Show In Raids",
+                            --     desc = "Show in raids.",
+                            --     set = function(info, value)
+                            --         RangeHelper.db.profile.showInRaid = value;
+                            --     end,
+                            --     get = function(info)
+                            --         return RangeHelper.db.profile.showInRaid;
+                            --     end,
+                            -- }
+                        }
+                    }
                 },
             },
             icon = {
                 order = 3,
                 type = "group",
-                name = "Icon Settings",
+                name = "Icon Customization",
                 inline = true,
                 args = {
                     size = {
