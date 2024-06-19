@@ -16,7 +16,11 @@ RangeHelper.abilities = {
     ["Dragon's Breath"] = {
         ["range"] = 10,
         ["iconPath"] = "Interface\\ICONS\\INV_Misc_Head_Dragon_01",
-    }
+    },
+    ["Cone of Cold"] = {
+        ["range"] = 10,
+        ["iconPath"] = "Interface\\ICONS\\Spell_Frost_Glacier",
+    },
 };
 
 RangeHelper.harmItems = {
@@ -86,7 +90,7 @@ RangeHelper.harmItems = {
 };
 
 RangeHelper.classAbilities = {
-    ["MAGE"] = "Dragon's Breath",
+    ["MAGE"] = "Cone of Cold",
     ["PRIEST"] = "Psychic Scream",
     ["WARLOCK"] = "Howl of Terror",
     ["SHAMAN"] = "Thunderstorm",
