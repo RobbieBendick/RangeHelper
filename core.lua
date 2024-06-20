@@ -1,5 +1,5 @@
 local RangeHelper = LibStub("AceAddon-3.0"):GetAddon("RangeHelper");
-RangeHelper.playersWithinRange = {};
+RangeHelper.framesWithinRange = {};
 local _, playerClass = UnitClass("player");
 
 function RangeHelper:IsWithinAbilityRange(unit)
@@ -32,74 +32,69 @@ function RangeHelper:UpdateIcon(frame)
     frame.icon:SetTexture(self.abilities[self.db.profile.selectedAbility].iconPath);
     frame.icon:SetPoint("CENTER", frame, "CENTER", self.db.profile.icon.coordinates.x, self.db.profile.icon.coordinates.y);
 
-    -- have to explicity check if true
-    if RangeHelper.playersWithinRange[frame] == true then
+    if RangeHelper.framesWithinRange[frame] == true then
         frame.icon:Show();
     else
         frame.icon:Hide();
     end
 end
 
+function RangeHelper:IsSpellOnCooldown(spellID)
+    local start, duration, enabled = GetSpellCooldown(spellID)
+    if enabled == 0 then
+        -- spell is not available (not learned or some other reason)
+        return true;
+    end
+    
+    if start > 0 and duration > 0 then
+        -- spell is on cooldown
+        return true;
+    else
+        -- Spell is not on cooldown
+        return false;
+    end
+end
+
 function RangeHelper:HandleUpdate()
-    for frame in pairs(RangeHelper.playersWithinRange) do
+    for frame in pairs(RangeHelper.framesWithinRange) do
         if not UnitExists(frame.unit) then 
-            if RangeHelper.playersWithinRange[frame] then
-                RangeHelper.playersWithinRange[frame] = nil;
+            if RangeHelper.framesWithinRange[frame] then
+                RangeHelper.framesWithinRange[frame] = nil;
                 RangeHelper:UpdateIcon(frame);
             end
             break;
         end
         if RangeHelper:IsWithinAbilityRange(frame.unit) then
-            RangeHelper.playersWithinRange[frame] = true;
+            RangeHelper.framesWithinRange[frame] = true;
         else
-            RangeHelper.playersWithinRange[frame] = false;
+            RangeHelper.framesWithinRange[frame] = false;
         end
         RangeHelper:UpdateIcon(frame);
     end
 end
 
-function RangeHelper:UpdatePlayerTable(frame)
-    if not UnitIsPlayer(frame.unit) then return end
-    if not UnitIsEnemy("player", frame.unit) then return end
-    if UnitIsDead(frame.unit) then return end
-    
-    RangeHelper.playersWithinRange[frame] = false;
-end
-
-hooksecurefunc("CompactUnitFrame_SetUnit", function(frame)
-    local _, instanceType = IsInInstance();
-    local shouldUpdate = false;
-    
-    if instanceType == "arena" and RangeHelper.db.profile.showInArena then
-        shouldUpdate = true;
-    elseif instanceType == "pvp" and RangeHelper.db.profile.showInBG then
-        shouldUpdate = true;
-    elseif instanceType == "none" and RangeHelper.db.profile.showInWorld then
-        shouldUpdate = true;
-    end
-
-    if shouldUpdate then
-        RangeHelper:UpdatePlayerTable(frame);
+function RangeHelper:UpdateWithinRangeTable(frame, unit)
+    if not UnitIsEnemy("player", unit) or UnitIsDead(unit) then
+        RangeHelper.framesWithinRange[frame] = nil;
     else
-        RangeHelper.playersWithinRange = {};
+        RangeHelper.framesWithinRange[frame] = false;
     end
-end);
-
-function RangeHelper:OpenOptions()
-    InterfaceOptionsFrame_OpenToCategory("RangeHelper");
-    InterfaceOptionsFrame_OpenToCategory("RangeHelper");
 end
+ 
+hooksecurefunc("CompactUnitFrame_SetUnit", function(frame, unit)
+    RangeHelper:UpdateWithinRangeTable(frame, unit);
+end)
 
-if RangeHelper.classAbilities[playerClass] then
-    SLASH_RANGEHELPER1 = "/rh"; 
-    SLASH_RANGEHELPER2 = "/rangehelper";
+hooksecurefunc(NamePlateDriverFrame, "OnNamePlateAdded", function(self, unit)
+    local frame = C_NamePlate.GetNamePlateForUnit(unit);
+    if frame then
+        RangeHelper:UpdateWithinRangeTable(frame, frame.unit);
+    end
+end)
 
-    SlashCmdList["RANGEHELPER"] = RangeHelper.OpenOptions;
-end
-
-local frame = CreateFrame("Frame");
-frame:RegisterEvent("ZONE_CHANGED_NEW_AREA");
-frame:RegisterEvent("PLAYER_LOGIN");
+local frame = CreateFrame("Frame")
+frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+frame:RegisterEvent("PLAYER_LOGIN")
 
 frame:SetScript("OnEvent", function(self, event, ...)
     if not RangeHelper.classAbilities[playerClass] then return end
@@ -107,11 +102,11 @@ frame:SetScript("OnEvent", function(self, event, ...)
     
     local function updateTracking()
         if (instanceType == "arena" and RangeHelper.db.profile.showInArena) or
-        (instanceType == "none" and RangeHelper.db.profile.showInWorld) or 
-        (instanceType == "pvp" and RangeHelper.db.profile.showInBG) then
+           (instanceType == "none" and RangeHelper.db.profile.showInWorld) or 
+           (instanceType == "pvp" and RangeHelper.db.profile.showInBG) then
             self:SetScript("OnUpdate", RangeHelper.HandleUpdate);
         else
-            RangeHelper.playersWithinRange = {};
+            RangeHelper.framesWithinRange = {};
             self:SetScript("OnUpdate", nil);
         end
     end
@@ -119,4 +114,16 @@ frame:SetScript("OnEvent", function(self, event, ...)
     if event == "ZONE_CHANGED_NEW_AREA" or event == "PLAYER_LOGIN" then
         updateTracking();
     end
-end);
+end)
+
+if RangeHelper.classAbilities[playerClass] then
+    SLASH_RANGEHELPER1 = "/rh";
+    SLASH_RANGEHELPER2 = "/rangehelper";
+
+    SlashCmdList["RANGEHELPER"] = RangeHelper.OpenOptions;
+end
+
+function RangeHelper:OpenOptions()
+    InterfaceOptionsFrame_OpenToCategory("RangeHelper");
+    InterfaceOptionsFrame_OpenToCategory("RangeHelper");
+end

@@ -11,6 +11,7 @@ local defaults = {
         showInArena = true,
         showInWorld = false,
         showInBG = false,
+        hideIconOnCD = true,
         -- showInDungeon = false,
         -- showInRaid = false,
         icon = {
@@ -68,11 +69,29 @@ function RangeHelper:CreateMenu()
                     spacer = {
                         order = 2,
                         type = "description",
-                        name = " ", 
+                        name = " ",
+                        width = 0.05,
+                    },
+                    hideIconOnCD = {
+                        order = 3,
+                        type = "toggle",
+                        name = "Hide Icon While On CD",
+                        desc = "Hide the icon when the selected ability is on cooldown.",
+                        set = function(info, value)
+                            RangeHelper.db.profile.hideIconOnCD = value;
+                        end,
+                        get = function(info)
+                            return RangeHelper.db.profile.hideIconOnCD;
+                        end,
+                    },
+                    spacer = {
+                        order = 3,
+                        type = "description",
+                        name = " ",
                         width = 0.05,
                     },
                     showInCategory = {
-                        order = 3,
+                        order = 4,
                         type = "group",
                         name = "Visibility Options",
                         inline = true,
@@ -119,32 +138,6 @@ function RangeHelper:CreateMenu()
                                     return RangeHelper.db.profile.showInWorld;
                                 end,
                             },
-                            -- showInDungeon = {
-                            --     order = 4,
-                            --     width = 0.8,
-                            --     type = "toggle",
-                            --     name = "Show In Dungeons",
-                            --     desc = "Show in dungeons.",
-                            --     set = function(info, value)
-                            --         RangeHelper.db.profile.showInDungeon = value;
-                            --     end,
-                            --     get = function(info)
-                            --         return RangeHelper.db.profile.showInDungeon;
-                            --     end,
-                            -- },
-                            -- showInRaid = {
-                            --     order = 5,
-                            --     width = 0.9,
-                            --     type = "toggle",
-                            --     name = "Show In Raids",
-                            --     desc = "Show in raids.",
-                            --     set = function(info, value)
-                            --         RangeHelper.db.profile.showInRaid = value;
-                            --     end,
-                            --     get = function(info)
-                            --         return RangeHelper.db.profile.showInRaid;
-                            --     end,
-                            -- }
                         }
                     }
                 },
@@ -234,6 +227,7 @@ function RangeHelper:CreateMenu()
             },
         },
     };
+    
     
     -- register options table for the main "RangeHelper" addon
     LibStub("AceConfig-3.0"):RegisterOptionsTable("RangeHelper", options);
