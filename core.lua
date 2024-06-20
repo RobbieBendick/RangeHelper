@@ -13,27 +13,47 @@ function RangeHelper:IsWithinAbilityRange(unit)
     return IsItemInRange(rangeItemId, unit) or false;
 end
 
+function RangeHelper:IsSpellOnCooldown(spellName)
+    local start, duration, enabled = GetSpellCooldown(spellName);
+    if enabled == 0 then
+        -- spell is not available (not learned or some other reason)
+        return true;
+    end
+    
+    if start > 0 and duration > 0 then
+        -- spell is on cooldown
+        return true;
+    else
+        -- spell is not on cooldown
+        return false;
+    end
+end
+
 function RangeHelper:UpdateIcon(frame)
     if not frame then return end
     if not frame.icon then
-        frame.icon = frame:CreateTexture(nil, "OVERLAY");
-        frame.icon:SetSize(self.db.profile.icon.size, self.db.profile.icon.size);
+        frame.icon = frame:CreateTexture(nil, "OVERLAY")
+        frame.icon:SetSize(self.db.profile.icon.size, self.db.profile.icon.size)
     else
-        local currentWidth, currentHeight = frame.icon:GetSize();
+        local currentWidth, currentHeight = frame.icon:GetSize()
         if currentWidth ~= tonumber(self.db.profile.icon.size) or currentHeight ~= tonumber(self.db.profile.icon.size) then
-            frame.icon:SetSize(self.db.profile.icon.size, self.db.profile.icon.size);
+            frame.icon:SetSize(self.db.profile.icon.size, self.db.profile.icon.size)
         end
 
-        local currentOpacity = frame.icon:GetAlpha();
+        local currentOpacity = frame.icon:GetAlpha()
         if currentOpacity ~= tonumber(self.db.profile.icon.opacity) then
-            frame.icon:SetAlpha(tonumber(self.db.profile.icon.opacity));
+            frame.icon:SetAlpha(tonumber(self.db.profile.icon.opacity))
         end
     end
-    frame.icon:SetTexture(self.abilities[self.db.profile.selectedAbility].iconPath);
-    frame.icon:SetPoint("CENTER", frame, "CENTER", self.db.profile.icon.coordinates.x, self.db.profile.icon.coordinates.y);
-
+    frame.icon:SetTexture(self.abilities[self.db.profile.selectedAbility].iconPath)
+    frame.icon:SetPoint("CENTER", frame, "CENTER", self.db.profile.icon.coordinates.x, self.db.profile.icon.coordinates.y)
+    
     if RangeHelper.framesWithinRange[frame] == true then
-        frame.icon:Show();
+        if self.db.profile.hideIconOnCD and RangeHelper:IsSpellOnCooldown(self.db.profile.selectedAbility) then
+            frame.icon:Hide();
+        else
+            frame.icon:Show();
+        end
     else
         frame.icon:Hide();
     end
@@ -76,6 +96,14 @@ hooksecurefunc(NamePlateDriverFrame, "OnNamePlateAdded", function(self, unit)
     end
 end)
 
+hooksecurefunc(NamePlateDriverFrame, "OnNamePlateRemoved", function(self, unit)
+    local frame = C_NamePlate.GetNamePlateForUnit(unit);
+    if frame then
+        RangeHelper.playersWithinRange[frame] = nil;
+        RangeHelper:UpdateIcon(frame);
+    end
+end)
+
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 frame:RegisterEvent("PLAYER_LOGIN")
@@ -105,7 +133,6 @@ function RangeHelper:OpenOptions()
     InterfaceOptionsFrame_OpenToCategory("RangeHelper");
 end
 
-print('rob')
 if RangeHelper.classAbilities[playerClass] then
     SLASH_RANGEHELPER1 = "/rh"
     SLASH_RANGEHELPER2 = "/rangehelper"
