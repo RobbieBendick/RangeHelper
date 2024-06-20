@@ -39,22 +39,6 @@ function RangeHelper:UpdateIcon(frame)
     end
 end
 
-function RangeHelper:IsSpellOnCooldown(spellID)
-    local start, duration, enabled = GetSpellCooldown(spellID)
-    if enabled == 0 then
-        -- spell is not available (not learned or some other reason)
-        return true;
-    end
-    
-    if start > 0 and duration > 0 then
-        -- spell is on cooldown
-        return true;
-    else
-        -- Spell is not on cooldown
-        return false;
-    end
-end
-
 function RangeHelper:HandleUpdate()
     for frame in pairs(RangeHelper.framesWithinRange) do
         if not UnitExists(frame.unit) then 
@@ -116,14 +100,16 @@ frame:SetScript("OnEvent", function(self, event, ...)
     end
 end)
 
-if RangeHelper.classAbilities[playerClass] then
-    SLASH_RANGEHELPER1 = "/rh";
-    SLASH_RANGEHELPER2 = "/rangehelper";
-
-    SlashCmdList["RANGEHELPER"] = RangeHelper.OpenOptions;
-end
-
 function RangeHelper:OpenOptions()
     InterfaceOptionsFrame_OpenToCategory("RangeHelper");
     InterfaceOptionsFrame_OpenToCategory("RangeHelper");
 end
+
+print('rob')
+if RangeHelper.classAbilities[playerClass] then
+    SLASH_RANGEHELPER1 = "/rh"
+    SLASH_RANGEHELPER2 = "/rangehelper"
+    
+    SlashCmdList["RANGEHELPER"] = RangeHelper.OpenOptions
+end
+
