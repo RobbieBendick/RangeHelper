@@ -16,16 +16,26 @@ end
 function RangeHelper:IsSpellOnCooldown(spellName)
     local start, duration, enabled = GetSpellCooldown(spellName);
     if enabled == 0 then
-        -- spell is not available (not learned or some other reason)
         return true;
     end
-    
     if start > 0 and duration > 0 then
-        -- spell is on cooldown
-        return true;
-    else
-        -- spell is not on cooldown
-        return false;
+        local gcdThreshold = 1.5;
+        local margin = 0.1;
+
+        if duration > (gcdThreshold + margin) then
+            return true;
+        end
+    end
+    return false
+end
+
+function RangeHelper:ShouldLoad()
+    local _, instanceType = IsInInstance();
+
+    if (instanceType == "arena" and RangeHelper.db.profile.showInArena) or
+           (instanceType == "none" and RangeHelper.db.profile.showInWorld) or 
+           (instanceType == "pvp" and RangeHelper.db.profile.showInBG) then
+            return true;
     end
 end
 
@@ -60,6 +70,7 @@ function RangeHelper:UpdateIcon(frame)
 end
 
 function RangeHelper:HandleUpdate()
+    
     for frame in pairs(RangeHelper.framesWithinRange) do
         if not UnitExists(frame.unit) then 
             if RangeHelper.framesWithinRange[frame] then
@@ -78,7 +89,7 @@ function RangeHelper:HandleUpdate()
 end
 
 function RangeHelper:UpdateWithinRangeTable(frame, unit)
-    if not UnitIsEnemy("player", unit) or UnitIsDead(unit) then
+    if not UnitIsEnemy("player", unit) or not UnitIsPlayer(unit) or UnitIsDead(unit) then
         RangeHelper.framesWithinRange[frame] = nil;
     else
         RangeHelper.framesWithinRange[frame] = false;
@@ -86,7 +97,8 @@ function RangeHelper:UpdateWithinRangeTable(frame, unit)
 end
  
 hooksecurefunc("CompactUnitFrame_SetUnit", function(frame, unit)
-    RangeHelper:UpdateWithinRangeTable(frame, unit);
+    if not unit:match("^nameplate") then return end
+    RangeHelper:UpdateWithinRangeTable(frame, frame.unit);
 end)
 
 hooksecurefunc(NamePlateDriverFrame, "OnNamePlateAdded", function(self, unit)
@@ -100,7 +112,6 @@ hooksecurefunc(NamePlateDriverFrame, "OnNamePlateRemoved", function(self, unit)
     local frame = C_NamePlate.GetNamePlateForUnit(unit);
     if frame then
         RangeHelper.playersWithinRange[frame] = nil;
-        RangeHelper:UpdateIcon(frame);
     end
 end)
 
