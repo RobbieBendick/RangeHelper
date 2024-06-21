@@ -10,7 +10,7 @@ RangeHelper.abilities = {
         ["iconPath"] = "Interface\\ICONS\\spell_shaman_thunderstorm",
     },
     ["Howl of Terror"] = {
-        ["range"] = 10,
+        ["range"] = 8,
         ["iconPath"] = "Interface\\ICONS\\Spell_Shadow_DeathScream",
     },
     ["Dragon's Breath"] = {
@@ -90,7 +90,7 @@ RangeHelper.harmItems = {
 };
 
 RangeHelper.classAbilities = {
-    ["MAGE"] = "Dragon's Breath",
+    ["MAGE"] = "Cone of Cold",
     ["PRIEST"] = "Psychic Scream",
     ["WARLOCK"] = "Howl of Terror",
     ["SHAMAN"] = "Thunderstorm",
