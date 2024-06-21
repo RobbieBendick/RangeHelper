@@ -8,3 +8,4 @@
 - Thunderstorm
 - Psychic Scream
 - Howl of Terror
+- Cone of Cold
