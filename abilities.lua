@@ -20,7 +20,11 @@ RangeHelper.abilities = {
     ["Cone of Cold"] = {
         ["range"] = 10,
         ["iconPath"] = "Interface\\ICONS\\Spell_Frost_Glacier",
-    }
+    },
+    ["Shadowstep"] = {
+        ["range"] = 25,
+        ["iconPath"] = "Interface\\ICONS\\Ability_rogue_shadowstep",
+    },
 };
 
 RangeHelper.harmItems = {
@@ -94,4 +98,5 @@ RangeHelper.classAbilities = {
     ["PRIEST"] = "Psychic Scream",
     ["WARLOCK"] = "Howl of Terror",
     ["SHAMAN"] = "Thunderstorm",
+    ["ROGUE"] = "Shadowstep",
 };

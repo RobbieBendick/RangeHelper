@@ -11,7 +11,7 @@ local defaults = {
         showInArena = true,
         showInWorld = false,
         showInBG = false,
-        hideIconOnCD = true,
+        hideIconOnCD = false,
         -- showInDungeon = false,
         -- showInRaid = false,
         icon = {
@@ -36,7 +36,7 @@ function RangeHelper:CreateMenu()
     end
 
     local version = GetAddOnMetadata("RangeHelper", "Version") or "Unknown";
-    local author = GetAddOnMetadata("RangeHelper", "Author") or "Unknown";
+    local author = GetAddOnMetadata("RangeHelper", "Author") or "Mageiden";
 
     local options = {
         name = RHConfig.name,

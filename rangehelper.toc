@@ -1,9 +1,9 @@
 ## Interface: 100200
 ## Title: RangeHelper
 ## Author: Mageiden
-## Notes: Displays an icon above the nameplates of enemy arena players who are within range of specific abilities.
+## Notes: Displays an icon above the nameplates of enemy players who are within range of specific abilities.
 ## DefaultState: enabled
-## Version: v0.0.2
+## Version: v0.0.3
 ## SavedVariables: RangeHelperDB
 embeds.xml
 
