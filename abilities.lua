@@ -5,10 +5,6 @@ RangeHelper.abilities = {
         ["range"] = 8,
         ["iconPath"] = "Interface\\ICONS\\Spell_Shadow_PsychicScream",
     },
-    ["Thunderstorm"] = { 
-        ["range"] = 10,
-        ["iconPath"] = "Interface\\ICONS\\spell_shaman_thunderstorm",
-    },
     ["Howl of Terror"] = {
         ["range"] = 8,
         ["iconPath"] = "Interface\\ICONS\\Spell_Shadow_DeathScream",
@@ -21,9 +17,21 @@ RangeHelper.abilities = {
         ["range"] = 10,
         ["iconPath"] = "Interface\\ICONS\\Spell_Frost_Glacier",
     },
+    ["Thunderstorm"] = { 
+        ["range"] = 10,
+        ["iconPath"] = "Interface\\ICONS\\spell_shaman_thunderstorm",
+    },
+    ["Piercing Howl"] = {
+        ["range"] = 10,
+        ["iconPath"] = "Interface\\ICONS\\Spell_shadow_deathscream",
+    },
     ["Shadowstep"] = {
         ["range"] = 25,
         ["iconPath"] = "Interface\\ICONS\\Ability_rogue_shadowstep",
+    },
+    ["Typhoon"] = {
+        ["range"] = 30,
+        ["iconPath"] = "Interface\\ICONS\\ability_druid_typhoon",
     },
 };
 
