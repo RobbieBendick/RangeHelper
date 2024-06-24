@@ -107,4 +107,6 @@ RangeHelper.classAbilities = {
     ["WARLOCK"] = "Howl of Terror",
     ["SHAMAN"] = "Thunderstorm",
     ["ROGUE"] = "Shadowstep",
+    ["WARRIOR"] = "Piercing Howl",
+    ["DRUID"] = "Typhoon",
 };
