@@ -9,3 +9,6 @@
 - Psychic Scream
 - Howl of Terror
 - Cone of Cold
+- Shadowstep
+
+### [Available on _CurseForge_](https://www.curseforge.com/wow/addons/rangehelper)
