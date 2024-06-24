@@ -32,9 +32,9 @@ end
 function RangeHelper:ShouldLoad()
     local _, instanceType = IsInInstance();
     if (instanceType == "arena" and RangeHelper.db.profile.showInArena) or
-           (instanceType == "none" and RangeHelper.db.profile.showInWorld) or 
-           (instanceType == "pvp" and RangeHelper.db.profile.showInBG) then
-            return true;
+       (instanceType == "none" and RangeHelper.db.profile.showInWorld) or 
+       (instanceType == "pvp" and RangeHelper.db.profile.showInBG) then
+        return true;
     end
     return false;
 end
@@ -72,18 +72,12 @@ end
 function RangeHelper:HandleUpdate()
     for frame in pairs(RangeHelper.framesWithinRange) do
         if not UnitExists(frame.unit) then 
-            if RangeHelper.framesWithinRange[frame] then
-                RangeHelper.framesWithinRange[frame] = nil;
-                RangeHelper:UpdateIcon(frame);
-            end
-            break;
-        end
-        if RangeHelper:IsWithinAbilityRange(frame.unit) then
-            RangeHelper.framesWithinRange[frame] = true;
+            RangeHelper.framesWithinRange[frame] = nil;
+            RangeHelper:UpdateIcon(frame);
         else
-            RangeHelper.framesWithinRange[frame] = false;
+            RangeHelper.framesWithinRange[frame] = RangeHelper:IsWithinAbilityRange(frame.unit);
+            RangeHelper:UpdateIcon(frame);
         end
-        RangeHelper:UpdateIcon(frame);
     end
 end
 
@@ -95,23 +89,24 @@ function RangeHelper:UpdateWithinRangeTable(frame, unit)
         RangeHelper.framesWithinRange[frame] = false;
     end
 end
- 
+
 hooksecurefunc("CompactUnitFrame_SetUnit", function(frame, unit)
-    if not unit:match("^nameplate") then return end
-    RangeHelper:UpdateWithinRangeTable(frame, frame.unit);
+    if not unit or not unit:match("^nameplate") then return end
+    RangeHelper:UpdateWithinRangeTable(frame, unit);
 end);
 
 hooksecurefunc(NamePlateDriverFrame, "OnNamePlateAdded", function(self, unit)
     local frame = C_NamePlate.GetNamePlateForUnit(unit);
     if frame then
-        RangeHelper:UpdateWithinRangeTable(frame, frame.unit);
+        RangeHelper:UpdateWithinRangeTable(frame, unit);
     end
 end);
 
 hooksecurefunc(NamePlateDriverFrame, "OnNamePlateRemoved", function(self, unit)
     local frame = C_NamePlate.GetNamePlateForUnit(unit);
     if frame then
-        RangeHelper.playersWithinRange[frame] = nil;
+        RangeHelper.framesWithinRange[frame] = nil;
+        RangeHelper:UpdateIcon(frame);
     end
 end);
 
@@ -121,8 +116,6 @@ frame:RegisterEvent("PLAYER_LOGIN");
 
 frame:SetScript("OnEvent", function(self, event, ...)
     if not RangeHelper.classAbilities[playerClass] then return end
-    local _, instanceType = IsInInstance();
-    
     local function updateTracking()
         if RangeHelper:ShouldLoad() then
             self:SetScript("OnUpdate", RangeHelper.HandleUpdate);
@@ -148,4 +141,3 @@ if RangeHelper.classAbilities[playerClass] then
     
     SlashCmdList["RANGEHELPER"] = RangeHelper.OpenOptions;
 end
-
