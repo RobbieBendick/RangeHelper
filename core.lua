@@ -1,9 +1,8 @@
 local RangeHelper = LibStub("AceAddon-3.0"):GetAddon("RangeHelper");
-RangeHelper.framesWithinRange = {};
 local _, playerClass = UnitClass("player");
 
 function RangeHelper:IsWithinAbilityRange(unit)
-    local spellRange = self.abilities[RangeHelper.db.profile.selectedAbility].range;
+    local spellRange = self.abilities[self.db.profile.selectedAbility].range;
     local rangeItemId = self.harmItems[spellRange][1];
 
     if not rangeItemId then
@@ -29,21 +28,12 @@ function RangeHelper:IsSpellOnCooldown(spellName)
     return false;
 end
 
-function RangeHelper:ShouldLoad()
-    local _, instanceType = IsInInstance();
-    if (instanceType == "arena" and RangeHelper.db.profile.showInArena) or
-       (instanceType == "none" and RangeHelper.db.profile.showInWorld) or 
-       (instanceType == "pvp" and RangeHelper.db.profile.showInBG) then
-        return true;
-    end
-    return false;
-end
-
 function RangeHelper:UpdateIcon(frame)
     if not frame then return end
     if not frame.icon then
         frame.icon = frame:CreateTexture(nil, "OVERLAY");
         frame.icon:SetSize(self.db.profile.icon.size, self.db.profile.icon.size);
+        frame.icon:SetAlpha(tonumber(self.db.profile.icon.opacity));
     else
         local currentWidth, currentHeight = frame.icon:GetSize();
         if currentWidth ~= tonumber(self.db.profile.icon.size) or currentHeight ~= tonumber(self.db.profile.icon.size) then
@@ -58,8 +48,9 @@ function RangeHelper:UpdateIcon(frame)
     frame.icon:SetTexture(self.abilities[self.db.profile.selectedAbility].iconPath);
     frame.icon:SetPoint("CENTER", frame, "CENTER", self.db.profile.icon.coordinates.x, self.db.profile.icon.coordinates.y);
     
-    if RangeHelper.framesWithinRange[frame] == true then
-        if self.db.profile.hideIconOnCD and RangeHelper:IsSpellOnCooldown(self.db.profile.selectedAbility) then
+    -- have to explicitly check if true
+    if self.framesWithinRange[frame] == true then
+        if self.db.profile.hideIconOnCD and self:IsSpellOnCooldown(self.db.profile.selectedAbility) then
             frame.icon:Hide();
         else
             frame.icon:Show();
@@ -69,22 +60,20 @@ function RangeHelper:UpdateIcon(frame)
     end
 end
 
-function RangeHelper:HandleUpdate()
-    for frame in pairs(RangeHelper.framesWithinRange) do
-        if not UnitExists(frame.unit) then 
-            RangeHelper.framesWithinRange[frame] = nil;
-            RangeHelper:UpdateIcon(frame);
-        else
-            RangeHelper.framesWithinRange[frame] = RangeHelper:IsWithinAbilityRange(frame.unit);
-            RangeHelper:UpdateIcon(frame);
-        end
-    end
-end
-
 function RangeHelper:UpdateWithinRangeTable(frame, unit)
     if not frame or not unit then return end
-    if not UnitIsEnemy("player", unit) or not UnitIsPlayer(unit) or UnitIsDead(unit) then
+    
+    if UnitIsDead(unit) or not UnitIsEnemy("player", unit) then
         RangeHelper.framesWithinRange[frame] = nil;
+        return;
+    end
+
+    if not RangeHelper.db.profile.showInPVE then
+        if UnitIsPlayer(unit) then
+            RangeHelper.framesWithinRange[frame] = false;
+        else
+            RangeHelper.framesWithinRange[frame] = nil;
+        end
     else
         RangeHelper.framesWithinRange[frame] = false;
     end
@@ -107,26 +96,6 @@ hooksecurefunc(NamePlateDriverFrame, "OnNamePlateRemoved", function(self, unit)
     if frame then
         RangeHelper.framesWithinRange[frame] = nil;
         RangeHelper:UpdateIcon(frame);
-    end
-end);
-
-local frame = CreateFrame("Frame");
-frame:RegisterEvent("ZONE_CHANGED_NEW_AREA");
-frame:RegisterEvent("PLAYER_LOGIN");
-
-frame:SetScript("OnEvent", function(self, event, ...)
-    if not RangeHelper.classAbilities[playerClass] then return end
-    local function updateTracking()
-        if RangeHelper:ShouldLoad() then
-            self:SetScript("OnUpdate", RangeHelper.HandleUpdate);
-        else
-            RangeHelper.framesWithinRange = {};
-            self:SetScript("OnUpdate", nil);
-        end
-    end
-
-    if event == "ZONE_CHANGED_NEW_AREA" or event == "PLAYER_LOGIN" then
-        updateTracking();
     end
 end);
 

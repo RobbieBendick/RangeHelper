@@ -4,6 +4,7 @@ local AceConfigDialog = LibStub("AceConfigDialog-3.0");
 local RHConfig;
 local _, playerClass = UnitClass("player");
 local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
+RangeHelper.framesWithinRange = {};
 
 local defaults = {
     profile = {
@@ -11,6 +12,7 @@ local defaults = {
         showInArena = true,
         showInWorld = false,
         showInBG = false,
+        showInPVE = false,
         hideIconOnCD = false,
         -- showInDungeon = false,
         -- showInRaid = false,
@@ -78,10 +80,10 @@ function RangeHelper:CreateMenu()
                         name = "Hide Icon While On CD",
                         desc = "Hide the icon when the selected ability is on cooldown.",
                         set = function(info, value)
-                            RangeHelper.db.profile.hideIconOnCD = value;
+                            self.db.profile.hideIconOnCD = value;
                         end,
                         get = function(info)
-                            return RangeHelper.db.profile.hideIconOnCD;
+                            return self.db.profile.hideIconOnCD;
                         end,
                     },
                     spacer = {
@@ -103,11 +105,10 @@ function RangeHelper:CreateMenu()
                                 name = "Show In Arena",
                                 desc = "Show in arena.",
                                 set = function(info, value)
-                                    RangeHelper.playersWithinRange = {};
-                                    RangeHelper.db.profile.showInArena = value;
+                                    self.db.profile.showInArena = value;
                                 end,
                                 get = function(info)
-                                    return RangeHelper.db.profile.showInArena;
+                                    return self.db.profile.showInArena;
                                 end,
                             },
                             showInBG = {
@@ -117,11 +118,10 @@ function RangeHelper:CreateMenu()
                                 name = "Show In BG",
                                 desc = "Show in BG.",
                                 set = function(info, value)
-                                    RangeHelper.playersWithinRange = {};
-                                    RangeHelper.db.profile.showInBG = value;
+                                    self.db.profile.showInBG = value;
                                 end,
                                 get = function(info)
-                                    return RangeHelper.db.profile.showInBG;
+                                    return self.db.profile.showInBG;
                                 end,
                             },
                             showInWorld = {
@@ -131,11 +131,23 @@ function RangeHelper:CreateMenu()
                                 name = "Show In World",
                                 desc = "Show in world.",
                                 set = function(info, value)
-                                    RangeHelper.playersWithinRange = {};
-                                    RangeHelper.db.profile.showInWorld = value;
+                                    self.db.profile.showInWorld = value;
                                 end,
                                 get = function(info)
-                                    return RangeHelper.db.profile.showInWorld;
+                                    return self.db.profile.showInWorld;
+                                end,
+                            },
+                            showInPVE = {
+                                order = 4,
+                                width = 0.67,
+                                type = "toggle",
+                                name = "Show In PVE",
+                                desc = "Show in PVE.",
+                                set = function(info, value)
+                                    self.db.profile.showInPVE = value;
+                                end,
+                                get = function(info)
+                                    return self.db.profile.showInPVE;
                                 end,
                             },
                         }
@@ -157,10 +169,10 @@ function RangeHelper:CreateMenu()
                         max = 80,
                         step = 1,
                         set = function(info, value)
-                            RangeHelper.db.profile.icon.size = value;
+                            self.db.profile.icon.size = value;
                         end,
                         get = function(info)
-                            return RangeHelper.db.profile.icon.size;
+                            return self.db.profile.icon.size;
                         end,
                     },
                     opacity = {
@@ -172,10 +184,10 @@ function RangeHelper:CreateMenu()
                         max = 1,
                         step = 0.1,
                         set = function(info, value)
-                            RangeHelper.db.profile.icon.opacity = value;
+                            self.db.profile.icon.opacity = value;
                         end,
                         get = function(info)
-                            return RangeHelper.db.profile.icon.opacity;
+                            return self.db.profile.icon.opacity;
                         end,
                     },
                     coordinates = {
@@ -191,10 +203,10 @@ function RangeHelper:CreateMenu()
                                 max = 150,
                                 step = 1,
                                 set = function(info, value)
-                                    RangeHelper.db.profile.icon.coordinates.x = value;
+                                    self.db.profile.icon.coordinates.x = value;
                                 end,
                                 get = function(info)
-                                    return RangeHelper.db.profile.icon.coordinates.x;
+                                    return self.db.profile.icon.coordinates.x;
                                 end,
                             },
                             y = {
@@ -206,10 +218,10 @@ function RangeHelper:CreateMenu()
                                 max = 150,
                                 step = 1,
                                 set = function(info, value)
-                                    RangeHelper.db.profile.icon.coordinates.y = value;
+                                    self.db.profile.icon.coordinates.y = value;
                                 end,
                                 get = function(info)
-                                    return RangeHelper.db.profile.icon.coordinates.y;
+                                    return self.db.profile.icon.coordinates.y;
                                 end,
                             },
                         },
@@ -256,22 +268,62 @@ function RangeHelper:LoadStaticDialogs()
 end
 
 function RangeHelper:OnInitialize()
-    if not RangeHelper.classAbilities[playerClass] then
+    if not self.classAbilities[playerClass] then
         return self:Print("No abilities available to track for your class.");
     end
 
     -- initialize saved variables with defaults
-    RangeHelper.db = LibStub("AceDB-3.0"):New("RangeHelperDB", defaults, true);
+    self.db = LibStub("AceDB-3.0"):New("RangeHelperDB", defaults, true);
 
     self:Print("Type /rh to change the ability/icon/range of the tracker.");
 
     -- TODO: handle events
+    self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "UpdateTracking")
+    self:RegisterEvent("PLAYER_LOGIN", "UpdateTracking")
+
+    self.db.RegisterCallback(self, "OnProfileChanged", "UpdateTracking")
+    self.db.RegisterCallback(self, "OnProfileCopied", "UpdateTracking")
+    self.db.RegisterCallback(self, "OnProfileReset", "UpdateTracking")
 
     -- load config stuff
-    RangeHelper:CreateMenu();
+    self:CreateMenu();
     AceConfigRegistry:NotifyChange("RangeHelper");
 
-
     self:LoadStaticDialogs();
+
+    self.frame = CreateFrame("Frame");
 end
 
+function RangeHelper:ShouldLoad()
+    local _, instanceType = IsInInstance();
+    if (instanceType == "arena" and self.db.profile.showInArena) or
+       (instanceType == "none" and self.db.profile.showInWorld) or 
+       (instanceType == "pvp" and self.db.profile.showInBG) then
+        return true;
+    end
+    return false;
+end
+
+function RangeHelper:HandleUpdate()
+    for frame in pairs(RangeHelper.framesWithinRange) do
+        if not UnitExists(frame.unit) then 
+            RangeHelper.framesWithinRange[frame] = nil;
+            RangeHelper:UpdateIcon(frame);
+        else
+            RangeHelper.framesWithinRange[frame] = RangeHelper:IsWithinAbilityRange(frame.unit);
+            RangeHelper:UpdateIcon(frame);
+        end
+    end
+end
+
+function RangeHelper:UpdateTracking()
+    if not self.classAbilities[playerClass] then return end
+    self.framesWithinRange = {};
+    if self:ShouldLoad() then
+        self.frame:SetScript("OnUpdate", function()
+            self:HandleUpdate()
+        end);
+    else
+        self.frame:SetScript("OnUpdate", nil);
+    end
+end
