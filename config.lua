@@ -34,7 +34,7 @@ function RangeHelper:CreateMenu()
  
     local abilities = {};
     for abilityName, data in pairs(RangeHelper.abilities) do
-        abilities[abilityName] = ("%s (%dyd)"):format(abilityName, data.range);
+        abilities[abilityName] = ("|T%s:16|t %s (%dyd)"):format(data.iconPath, abilityName, data.range);
     end
 
     local version = GetAddOnMetadata("RangeHelper", "Version") or "Unknown";
@@ -62,11 +62,12 @@ function RangeHelper:CreateMenu()
                         desc = "Select an ability.",
                         values = abilities,
                         set = function(info, value)
-                            RangeHelper.db.profile.selectedAbility = value;
+                            self.db.profile.selectedAbility = value;
                         end,
                         get = function(info)
-                            return RangeHelper.db.profile.selectedAbility;
+                            return self.db.profile.selectedAbility;
                         end,
+                        width = 1.1,
                     },
                     spacer = {
                         order = 2,
@@ -275,15 +276,12 @@ function RangeHelper:OnInitialize()
     -- initialize saved variables with defaults
     self.db = LibStub("AceDB-3.0"):New("RangeHelperDB", defaults, true);
 
-    self:Print("Type /rh to change the ability/icon/range of the tracker.");
-
-    -- TODO: handle events
-    self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "UpdateTracking")
-    self:RegisterEvent("PLAYER_LOGIN", "UpdateTracking")
-
-    self.db.RegisterCallback(self, "OnProfileChanged", "UpdateTracking")
-    self.db.RegisterCallback(self, "OnProfileCopied", "UpdateTracking")
-    self.db.RegisterCallback(self, "OnProfileReset", "UpdateTracking")
+    -- events
+    self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "UpdateTracking");
+    self:RegisterEvent("PLAYER_LOGIN", "UpdateTracking");
+    self.db.RegisterCallback(self, "OnProfileChanged", "UpdateTracking");
+    self.db.RegisterCallback(self, "OnProfileCopied", "UpdateTracking");
+    self.db.RegisterCallback(self, "OnProfileReset", "UpdateTracking");
 
     -- load config stuff
     self:CreateMenu();
@@ -292,6 +290,8 @@ function RangeHelper:OnInitialize()
     self:LoadStaticDialogs();
 
     self.frame = CreateFrame("Frame");
+
+    self:Print("Type /rh to change the ability/icon/range of the tracker.");
 end
 
 function RangeHelper:ShouldLoad()
