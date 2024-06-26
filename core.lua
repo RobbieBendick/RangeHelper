@@ -6,7 +6,7 @@ function RangeHelper:IsWithinAbilityRange(unit)
     local rangeItemId = self.harmItems[spellRange][1];
 
     if not rangeItemId then
-        return print("No item found with the spell range selected.");
+        return self:Print("No item found with the spell range selected.");
     end
 
     return IsItemInRange(rangeItemId, unit) or false;
@@ -64,18 +64,18 @@ function RangeHelper:UpdateWithinRangeTable(frame, unit)
     if not frame or not unit then return end
     
     if UnitIsDead(unit) or not UnitIsEnemy("player", unit) then
-        RangeHelper.framesWithinRange[frame] = nil;
+        self.framesWithinRange[frame] = nil;
         return;
     end
 
-    if not RangeHelper.db.profile.showInPVE then
+    if not self.db.profile.showInPVE then
         if UnitIsPlayer(unit) then
-            RangeHelper.framesWithinRange[frame] = false;
+            self.framesWithinRange[frame] = false;
         else
-            RangeHelper.framesWithinRange[frame] = nil;
+            self.framesWithinRange[frame] = nil;
         end
     else
-        RangeHelper.framesWithinRange[frame] = false;
+        self.framesWithinRange[frame] = false;
     end
 end
 

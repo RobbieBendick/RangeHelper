@@ -33,12 +33,12 @@ function RangeHelper:CreateMenu()
     RHConfig.name = "RangeHelper";
  
     local abilities = {};
-    for abilityName, data in pairs(RangeHelper.abilities) do
+    for abilityName, data in pairs(self.abilities) do
         abilities[abilityName] = ("|T%s:16|t %s (%dyd)"):format(data.iconPath, abilityName, data.range);
     end
 
-    local version = GetAddOnMetadata("RangeHelper", "Version") or "Unknown";
-    local author = GetAddOnMetadata("RangeHelper", "Author") or "Mageiden";
+    local version = GetAddOnMetadata(RHConfig.name, "Version") or "Unknown";
+    local author = GetAddOnMetadata(RHConfig.name, "Author") or "Mageiden";
 
     local options = {
         name = RHConfig.name,
@@ -243,10 +243,10 @@ function RangeHelper:CreateMenu()
     
     
     -- register options table for the main "RangeHelper" addon
-    LibStub("AceConfig-3.0"):RegisterOptionsTable("RangeHelper", options);
+    LibStub("AceConfig-3.0"):RegisterOptionsTable(RHConfig.name, options);
 
     -- add addon to the Blizzard options panel
-    LibStub("AceConfigDialog-3.0"):AddToBlizOptions("RangeHelper", "RangeHelper");
+    LibStub("AceConfigDialog-3.0"):AddToBlizOptions(RHConfig.name, RHConfig.name);
 
 end
 
@@ -279,6 +279,8 @@ function RangeHelper:OnInitialize()
     -- events
     self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "UpdateTracking");
     self:RegisterEvent("PLAYER_LOGIN", "UpdateTracking");
+
+    -- setting updates
     self.db.RegisterCallback(self, "OnProfileChanged", "UpdateTracking");
     self.db.RegisterCallback(self, "OnProfileCopied", "UpdateTracking");
     self.db.RegisterCallback(self, "OnProfileReset", "UpdateTracking");
@@ -305,13 +307,13 @@ function RangeHelper:ShouldLoad()
 end
 
 function RangeHelper:HandleUpdate()
-    for frame in pairs(RangeHelper.framesWithinRange) do
+    for frame in pairs(self.framesWithinRange) do
         if not UnitExists(frame.unit) then 
-            RangeHelper.framesWithinRange[frame] = nil;
-            RangeHelper:UpdateIcon(frame);
+            self.framesWithinRange[frame] = nil;
+            self:UpdateIcon(frame);
         else
-            RangeHelper.framesWithinRange[frame] = RangeHelper:IsWithinAbilityRange(frame.unit);
-            RangeHelper:UpdateIcon(frame);
+            self.framesWithinRange[frame] = self:IsWithinAbilityRange(frame.unit);
+            self:UpdateIcon(frame);
         end
     end
 end
