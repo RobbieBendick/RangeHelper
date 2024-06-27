@@ -325,6 +325,7 @@ function RangeHelper:SetSpecIndex()
 end
 
 function RangeHelper:HandleActiveTalentGroupChange()
+    if playerClass ~= "MAGE" then return end
     local prevSpec = self.specIndex;
     self:SetSpecIndex();
 
@@ -333,6 +334,7 @@ function RangeHelper:HandleActiveTalentGroupChange()
     elseif prevSpec == 2 and self.specIndex == 3 and self.db.profile.selectedAbility == "Dragon's Breath" then
         self.db.profile.selectedAbility = "Cone of Cold";
     end
+    AceConfigRegistry:NotifyChange("RangeHelper");
 end
 
 function RangeHelper:HandleLogin()
