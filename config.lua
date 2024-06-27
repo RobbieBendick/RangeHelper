@@ -100,7 +100,7 @@ function RangeHelper:CreateMenu()
                         order = 5,
                         type = "toggle",
                         name = "Swap between DB & CoC",
-                        desc = "When you swap to fire and you have Cone of Cold as your selected ability, switch to Dragon's Breath and vice versa.",
+                        desc = "When you swap to Fire from Frost and you have Cone of Cold as your selected ability, switch to Dragon's Breath and vice versa.",
                         set = function(info, value)
                             self.db.profile.swapBetweenDBAndCoC = value;
                         end,
