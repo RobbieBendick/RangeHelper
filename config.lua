@@ -16,8 +16,6 @@ local defaults = {
         showInBG = false,
         showInPVE = false,
         hideIconOnCD = false,
-        -- showInDungeon = false,
-        -- showInRaid = false,
         icon = {
             ["coordinates"] = {
                 x = 0,
@@ -325,7 +323,9 @@ function RangeHelper:SetSpecIndex()
 end
 
 function RangeHelper:HandleActiveTalentGroupChange()
+    if not self.db.profile.swapBetweenDBAndCoC then return end
     if playerClass ~= "MAGE" then return end
+    
     local prevSpec = self.specIndex;
     self:SetSpecIndex();
 
