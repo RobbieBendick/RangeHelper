@@ -5,10 +5,12 @@ local RHConfig;
 local _, playerClass = UnitClass("player");
 local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 RangeHelper.framesWithinRange = {};
+RangeHelper.specIndex = nil;
 
 local defaults = {
     profile = {
         selectedAbility = RangeHelper.classAbilities[playerClass] or "Thunderstorm",
+        swapBetweenDBAndCoC = false,
         showInArena = true,
         showInWorld = false,
         showInBG = false,
@@ -39,7 +41,6 @@ function RangeHelper:CreateMenu()
 
     local version = GetAddOnMetadata(RHConfig.name, "Version") or "Unknown";
     local author = GetAddOnMetadata(RHConfig.name, "Author") or "Mageiden";
-
     local options = {
         name = RHConfig.name,
         type = "group",
@@ -63,6 +64,7 @@ function RangeHelper:CreateMenu()
                         values = abilities,
                         set = function(info, value)
                             self.db.profile.selectedAbility = value;
+                            self:UpdateAbilitySettingsOptions();
                         end,
                         get = function(info)
                             return self.db.profile.selectedAbility;
@@ -73,7 +75,7 @@ function RangeHelper:CreateMenu()
                         order = 2,
                         type = "description",
                         name = " ",
-                        width = 0.05,
+                        width = "full",
                     },
                     hideIconOnCD = {
                         order = 3,
@@ -86,77 +88,94 @@ function RangeHelper:CreateMenu()
                         get = function(info)
                             return self.db.profile.hideIconOnCD;
                         end,
+                        width = 1,
                     },
                     spacer = {
-                        order = 3,
+                        order = 4,
                         type = "description",
                         name = " ",
-                        width = 0.05,
+                        width = "full",
                     },
-                    showInCategory = {
+                    swapBetweenDBAndCoC = {
+                        order = 5,
+                        type = "toggle",
+                        name = "Swap between DB & CoC",
+                        desc = "When you swap to fire and you have Cone of Cold as your selected ability, switch to Dragon's Breath and vice versa.",
+                        set = function(info, value)
+                            self.db.profile.swapBetweenDBAndCoC = value;
+                        end,
+                        get = function(info)
+                            return self.db.profile.swapBetweenDBAndCoC;
+                        end,
+                        hidden = function(info)
+                            return playerClass ~= "MAGE" or (self.db.profile.selectedAbility ~= "Dragon's Breath" and self.db.profile.selectedAbility ~= "Cone of Cold");
+                        end,
+                        width = 2,
+                    },
+                },
+            },
+            showInCategory = {
+                order = 3,
+                type = "group",
+                name = "Visibility Options",
+                inline = true,
+                args = {
+                    showInArena = {
+                        order = 1,
+                        width = 0.67,
+                        type = "toggle",
+                        name = "Show In Arena",
+                        desc = "Show in arena.",
+                        set = function(info, value)
+                            self.db.profile.showInArena = value;
+                        end,
+                        get = function(info)
+                            return self.db.profile.showInArena;
+                        end,
+                    },
+                    showInBG = {
+                        order = 2,
+                        width = 0.57,
+                        type = "toggle",
+                        name = "Show In BG",
+                        desc = "Show in BG.",
+                        set = function(info, value)
+                            self.db.profile.showInBG = value;
+                        end,
+                        get = function(info)
+                            return self.db.profile.showInBG;
+                        end,
+                    },
+                    showInWorld = {
+                        order = 3,
+                        width = 0.67,
+                        type = "toggle",
+                        name = "Show In World",
+                        desc = "Show in world.",
+                        set = function(info, value)
+                            self.db.profile.showInWorld = value;
+                        end,
+                        get = function(info)
+                            return self.db.profile.showInWorld;
+                        end,
+                    },
+                    showInPVE = {
                         order = 4,
-                        type = "group",
-                        name = "Visibility Options",
-                        inline = true,
-                        args = {
-                            showInArena = {
-                                order = 1,
-                                width = 0.67,
-                                type = "toggle",
-                                name = "Show In Arena",
-                                desc = "Show in arena.",
-                                set = function(info, value)
-                                    self.db.profile.showInArena = value;
-                                end,
-                                get = function(info)
-                                    return self.db.profile.showInArena;
-                                end,
-                            },
-                            showInBG = {
-                                order = 2,
-                                width = 0.57,
-                                type = "toggle",
-                                name = "Show In BG",
-                                desc = "Show in BG.",
-                                set = function(info, value)
-                                    self.db.profile.showInBG = value;
-                                end,
-                                get = function(info)
-                                    return self.db.profile.showInBG;
-                                end,
-                            },
-                            showInWorld = {
-                                order = 3,
-                                width = 0.67,
-                                type = "toggle",
-                                name = "Show In World",
-                                desc = "Show in world.",
-                                set = function(info, value)
-                                    self.db.profile.showInWorld = value;
-                                end,
-                                get = function(info)
-                                    return self.db.profile.showInWorld;
-                                end,
-                            },
-                            showInPVE = {
-                                order = 4,
-                                width = 0.67,
-                                type = "toggle",
-                                name = "Show In PVE",
-                                desc = "Show in PVE.",
-                                set = function(info, value)
-                                    self.db.profile.showInPVE = value;
-                                end,
-                                get = function(info)
-                                    return self.db.profile.showInPVE;
-                                end,
-                            },
-                        }
-                    }
+                        width = 0.67,
+                        type = "toggle",
+                        name = "Show In PVE",
+                        desc = "Show in PVE.",
+                        set = function(info, value)
+                            self.db.profile.showInPVE = value;
+                        end,
+                        get = function(info)
+                            return self.db.profile.showInPVE;
+                        end,
+                    },
                 },
             },
             icon = {
-                order = 3,
+                order = 4,
                 type = "group",
                 name = "Icon Customization",
                 inline = true,
@@ -277,8 +296,9 @@ function RangeHelper:OnInitialize()
     self.db = LibStub("AceDB-3.0"):New("RangeHelperDB", defaults, true);
 
     -- events
-    self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "UpdateTracking");
-    self:RegisterEvent("PLAYER_LOGIN", "UpdateTracking");
+    self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "HandleLogin");
+    self:RegisterEvent("PLAYER_LOGIN", "HandleLogin");
+    self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED", "HandleActiveTalentGroupChange");
 
     -- setting updates
     self.db.RegisterCallback(self, "OnProfileChanged", "UpdateTracking");
@@ -296,6 +316,30 @@ function RangeHelper:OnInitialize()
     self:Print("Type /rh to change the ability/icon/range of the tracker.");
 end
 
+function RangeHelper:SetSpecIndex()
+    for i=1, 3 do
+        if select(5, GetTalentTabInfo(i)) > 25 then
+            RangeHelper.specIndex = i;
+        end
+    end
+end
+
+function RangeHelper:HandleActiveTalentGroupChange()
+    local prevSpec = self.specIndex;
+    self:SetSpecIndex();
+
+    if prevSpec == 3 and self.specIndex == 2 and self.db.profile.selectedAbility == "Cone of Cold" then
+        self.db.profile.selectedAbility = "Dragon's Breath";
+    elseif prevSpec == 2 and self.specIndex == 3 and self.db.profile.selectedAbility == "Dragon's Breath" then
+        self.db.profile.selectedAbility = "Cone of Cold";
+    end
+end
+
+function RangeHelper:HandleLogin()
+    self:UpdateTracking();
+    self:SetSpecIndex();
+end
+
 function RangeHelper:ShouldLoad()
     local _, instanceType = IsInInstance();
     if (instanceType == "arena" and self.db.profile.showInArena) or
@@ -307,13 +351,13 @@ function RangeHelper:ShouldLoad()
 end
 
 function RangeHelper:HandleUpdate()
-    for frame in pairs(self.framesWithinRange) do
+    for frame in pairs(RangeHelper.framesWithinRange) do
         if not UnitExists(frame.unit) then 
-            self.framesWithinRange[frame] = nil;
-            self:UpdateIcon(frame);
+            RangeHelper.framesWithinRange[frame] = nil;
+            RangeHelper:UpdateIcon(frame);
         else
-            self.framesWithinRange[frame] = self:IsWithinAbilityRange(frame.unit);
-            self:UpdateIcon(frame);
+            RangeHelper.framesWithinRange[frame] = RangeHelper:IsWithinAbilityRange(frame.unit);
+            RangeHelper:UpdateIcon(frame);
         end
     end
 end
@@ -322,9 +366,7 @@ function RangeHelper:UpdateTracking()
     if not self.classAbilities[playerClass] then return end
     self.framesWithinRange = {};
     if self:ShouldLoad() then
-        self.frame:SetScript("OnUpdate", function()
-            self:HandleUpdate()
-        end);
+        self.frame:SetScript("OnUpdate", self.HandleUpdate);
     else
         self.frame:SetScript("OnUpdate", nil);
     end
