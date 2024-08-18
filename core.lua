@@ -28,76 +28,128 @@ function RangeHelper:IsSpellOnCooldown(spellName)
     return false;
 end
 
+local function GetFrameNumber(frame)
+    if not frame or not frame:GetName() then return nil end
+    local frameName = frame:GetName();
+    return tonumber(frameName:match("%d+$"));
+end
+
 function RangeHelper:UpdateIcon(frame)
     if not frame then return end
-    if not frame.icon then
-        frame.icon = frame:CreateTexture(nil, "OVERLAY");
-        frame.icon:SetSize(self.db.profile.icon.size, self.db.profile.icon.size);
-        frame.icon:SetAlpha(tonumber(self.db.profile.icon.opacity));
-    else
-        local currentWidth, currentHeight = frame.icon:GetSize();
-        if currentWidth ~= tonumber(self.db.profile.icon.size) or currentHeight ~= tonumber(self.db.profile.icon.size) then
-            frame.icon:SetSize(self.db.profile.icon.size, self.db.profile.icon.size);
-        end
 
-        local currentOpacity = frame.icon:GetAlpha();
-        if currentOpacity ~= tonumber(self.db.profile.icon.opacity) then
-            frame.icon:SetAlpha(tonumber(self.db.profile.icon.opacity));
+    local targetFrame = frame;
+    if IsAddOnLoaded("Plater") then
+        local frameNumber = GetFrameNumber(frame);
+        if frameNumber then
+            targetFrame = _G["NamePlate".. frameNumber .. "PlaterUnitFrame"];
         end
     end
-    frame.icon:SetTexture(self.abilities[self.db.profile.selectedAbility].iconPath);
-    frame.icon:SetPoint("CENTER", frame, "CENTER", self.db.profile.icon.coordinates.x, self.db.profile.icon.coordinates.y);
-    
+
+    if not targetFrame.icon then
+        targetFrame.icon = targetFrame:CreateTexture(nil, "OVERLAY");
+        targetFrame.icon:SetSize(self.db.profile.icon.size, self.db.profile.icon.size);
+        targetFrame.icon:SetAlpha(tonumber(self.db.profile.icon.opacity));
+    else
+        local currentWidth, currentHeight = targetFrame.icon:GetSize();
+        if currentWidth ~= tonumber(self.db.profile.icon.size) or currentHeight ~= tonumber(self.db.profile.icon.size) then
+            targetFrame.icon:SetSize(self.db.profile.icon.size, self.db.profile.icon.size);
+        end
+
+        local currentOpacity = targetFrame.icon:GetAlpha();
+        if currentOpacity ~= tonumber(self.db.profile.icon.opacity) then
+            targetFrame.icon:SetAlpha(tonumber(self.db.profile.icon.opacity));
+        end
+    end
+
+    targetFrame.icon:SetPoint("CENTER", targetFrame, "CENTER", self.db.profile.icon.coordinates.x, self.db.profile.icon.coordinates.y);
+    targetFrame.icon:SetTexture(self.abilities[self.db.profile.selectedAbility].iconPath);
+
     -- have to explicitly check if true
     if self.framesWithinRange[frame] == true then
         if self.db.profile.hideIconOnCD and self:IsSpellOnCooldown(self.db.profile.selectedAbility) then
-            frame.icon:Hide();
+            targetFrame.icon:Hide();
         else
-            frame.icon:Show();
+            targetFrame.icon:Show();
         end
     else
-        frame.icon:Hide();
+        targetFrame.icon:Hide();
     end
 end
+
 
 function RangeHelper:UpdateWithinRangeTable(frame, unit)
     if not frame or not unit then return end
     
+    local targetFrame = frame;
+    if IsAddOnLoaded("Plater") then
+        local frameNumber = GetFrameNumber(frame);
+        if frameNumber then
+            targetFrame = _G["NamePlate".. frameNumber .. "PlaterUnitFrame"];
+        end
+    end
+
     if UnitIsDead(unit) or not UnitIsEnemy("player", unit) then
-        self.framesWithinRange[frame] = nil;
-        return;
+        self.framesWithinRange[targetFrame] = nil;
+        return
     end
 
     if not self.db.profile.showInPVE then
         if UnitIsPlayer(unit) then
-            self.framesWithinRange[frame] = false;
+            self.framesWithinRange[targetFrame] = false;
         else
-            self.framesWithinRange[frame] = nil;
+            self.framesWithinRange[targetFrame] = nil;
         end
     else
-        self.framesWithinRange[frame] = false;
+        self.framesWithinRange[targetFrame] = false;
     end
 end
 
 hooksecurefunc("CompactUnitFrame_SetUnit", function(frame, unit)
     if not unit or not unit:match("^nameplate") then return end
-    RangeHelper:UpdateWithinRangeTable(frame, unit);
-end);
+
+    local targetFrame = frame;
+    if IsAddOnLoaded("Plater") then
+        local frameNumber = GetFrameNumber(frame);
+        if frameNumber then
+            targetFrame = _G["NamePlate".. frameNumber .. "PlaterUnitFrame"];
+        end
+    end
+
+    RangeHelper:UpdateWithinRangeTable(targetFrame, unit);
+end)
 
 hooksecurefunc(NamePlateDriverFrame, "OnNamePlateAdded", function(self, unit)
     local frame = C_NamePlate.GetNamePlateForUnit(unit);
-    if frame then
-        RangeHelper:UpdateWithinRangeTable(frame, unit);
+
+    local targetFrame = frame;
+    if IsAddOnLoaded("Plater") then
+        local frameNumber = GetFrameNumber(frame);
+        if frameNumber then
+            targetFrame = _G["NamePlate".. frameNumber .. "PlaterUnitFrame"];
+        end
     end
-end);
+
+    if targetFrame then
+        RangeHelper:UpdateWithinRangeTable(targetFrame, unit);
+    end
+end)
 
 hooksecurefunc(NamePlateDriverFrame, "OnNamePlateRemoved", function(self, unit)
     local frame = C_NamePlate.GetNamePlateForUnit(unit);
-    if frame then
-        RangeHelper.framesWithinRange[frame] = nil;
-        RangeHelper:UpdateIcon(frame);
+
+    local targetFrame = frame
+    if IsAddOnLoaded("Plater") then
+        local frameNumber = GetFrameNumber(frame);
+        if frameNumber then
+            targetFrame = _G["NamePlate".. frameNumber .. "PlaterUnitFrame"];
+        end
     end
-end);
+
+    if targetFrame then
+        RangeHelper.framesWithinRange[targetFrame] = nil
+        RangeHelper:UpdateIcon(targetFrame)
+    end
+end)
 
 function RangeHelper:OpenOptions()
     InterfaceOptionsFrame_OpenToCategory("RangeHelper");

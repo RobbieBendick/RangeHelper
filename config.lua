@@ -69,11 +69,11 @@ function RangeHelper:CreateMenu()
                         end,
                         width = 1.1,
                     },
-                    spacer = {
+                    spacerr = {
                         order = 2,
                         type = "description",
                         name = " ",
-                        width = "full",
+                        width = 0.1,
                     },
                     hideIconOnCD = {
                         order = 3,

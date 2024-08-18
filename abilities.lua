@@ -22,7 +22,7 @@ RangeHelper.abilities = {
         ["iconPath"] = "Interface\\ICONS\\spell_shaman_thunderstorm",
     },
     ["Shadowflame"] = {
-        ["range"] = 10,
+        ["range"] = 8,
         ["iconPath"] = "Interface\\ICONS\\ability_warlock_shadowflame",
     },
     ["Piercing Howl"] = {
