@@ -152,8 +152,12 @@ hooksecurefunc(NamePlateDriverFrame, "OnNamePlateRemoved", function(self, unit)
 end)
 
 function RangeHelper:OpenOptions()
-    InterfaceOptionsFrame_OpenToCategory("RangeHelper");
-    InterfaceOptionsFrame_OpenToCategory("RangeHelper");
+    if Settings and Settings.OpenToCategory then
+        Settings.OpenToCategory("RangeHelper");
+    else
+        InterfaceOptionsFrame_OpenToCategory("RangeHelper");
+        InterfaceOptionsFrame_OpenToCategory("RangeHelper");
+    end
 end
 
 if RangeHelper.classAbilities[playerClass] then
